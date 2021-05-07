@@ -10,6 +10,7 @@ import subprocess
 from tkinter import ttk 
 from collections import OrderedDict
 from test_scapy import  Sendtram, Sniffer #sendTram, getScenario,
+import threading
 import queue
 import datetime
 import time
@@ -39,15 +40,19 @@ def getOption(event, id_s):
 	global opt_2
 	global opt_3
 
-	s_name = label_simulation.nametowidget('s{}_cbbx'.format(str(id_s+1)))
+	#s_name = label_simulation.nametowidget('s{}_cbbx'.format(str(id_s+1)))
 
 	if id_s == 0:
+		s_name = label_simulation.nametowidget('s{}_cbbx'.format(str(id_s+1)))
 		opt = s_name.get()
 	elif id_s == 1:
+		s_name = label_simulation.nametowidget('s{}_cbbx'.format(str(id_s+1)))
 		opt = s_name.get()
 	elif id_s == 2:
+		s_name = label_simulation.nametowidget('s{}_cbbx'.format(str(id_s+1)))
 		opt = s_name.get()
 	elif id_s == 3:
+		s_name = label_simulation.nametowidget('s{}_cbbx'.format(str(id_s+1)))
 		opt = s_name.get()
 
 	#print(opt,"boutton:",id_s, type(opt))
@@ -60,11 +65,159 @@ def getDeclencheur(event, id_dcl):
 	opt = dcl_name.get()
 	print(opt,"boutton:",id_dcl)
 
-class Lancement():
+def boucle_t():
+	while True:
+		print("Boucle")
+
+class Affichage(threading.Thread):
+	def  __init__(self, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP):
+		#super().__init__()
+		super(Affichage, self).__init__()
+		self.opt = opt
+		#self.opt_FM = True
+		self.q = q
+		self.treeGeoloc = treeGeoloc
+		self.treeValM = treeValM
+		self.treeFinM = treeFinM
+		self.treeIHM = treeIHM
+		self.treeCFP = treeCFP
+		self.arret = False
+		self.FMStop = False
+		self.FPStop = False
+		self.DGStop = False
+
+	def run(self):
+		"""
+		"""
+		if self.opt == "Geoloc":
+			self.affichage_geoloc()
+		elif self.opt == "Retournement":
+			self.affichage_retournement()
+		elif self.opt == "FM":
+			print("passage")
+			self.affichage_FM()
+		elif self.opt == "FMFP":
+			self.affichage_FMFP()
+		elif self.opt == "DGFP":
+			self.affichage_DGFP()
+
+
+	def affichage_geoloc(self):
+		"""
+		"""
+		while self.arret == False:
+			tree_value = self.q.get().values()
+			tree_value = list(tree_value)
+			tree_value = tuple(tree_value)
+			now = datetime.datetime.now()
+			current_date = now.strftime("%d-%m-%Y %H:%M:%S")
+			tree_value = (current_date,) + tree_value
+			#print(tree_value)
+			if 'GEOLOC' in tree_value:
+				print(tree_value)
+				self.treeGeoloc.insert('', index='end', values=tree_value)
+				self.treeGeoloc.update()
+			elif 'VAL_MISS' in tree_value:
+				print(tree_value)
+				self.treeValM.insert('', index='end', values=tree_value)
+				self.treeValM.update()
+			elif 'FIN_MISS' in tree_value:
+				print(tree_value)
+				self.treeFinM.insert('', index='end', values=tree_value)
+				self.treeFinM.update()
+
+	def affichage_retournement(self):
+		"""
+		"""
+		while self.arret == False:
+			print("aff Retournement")
+			tree_value = self.q.get().values()
+			tree_value = list(tree_value)
+			tree_value = tuple(tree_value)
+			now = datetime.datetime.now()
+			current_date = now.strftime("%d-%m-%Y %H:%M:%S")
+			tree_value = (current_date,) + tree_value
+			#print(tree_value)
+			if 'GEOLOC' in tree_value:
+				print("Geoloc",tree_value)
+				self.treeGeoloc.insert('', index='end', values=tree_value)
+				self.treeGeoloc.update()
+			elif 'FIN_MISS' in tree_value: 
+				print("aff Retour")
+				print("Fin_Mission",tree_value)
+				self.treeFinM.insert('', index='end', values=tree_value)
+				self.treeFinM.update()
+			elif 'IHM' in tree_value:
+				print("IHM", tree_value)
+				self.treeIHM.insert('', index='end', values=tree_value)
+				self.treeIHM.update()
+			elif 'VAL_MISS' in tree_value:
+				print("Ret", tree_value)
+				self.treeValM.insert('', index='end', values=tree_value)
+				self.treeValM.update()
+			elif 'CFP' in tree_value:
+				self.treeCFP.insert('', index='end', values=tree_value)
+				self.treeCFP.update()
+
+	def affichage_FM(self):
+		"""
+		"""
+		tree_value = self.q.get().values()
+		tree_value = list(tree_value)
+		tree_value = tuple(tree_value)
+		now = datetime.datetime.now()
+		current_date = now.strftime("%d-%m-%Y %H:%M:%S")
+		tree_value = (current_date,) + tree_value
+		if 'FIN_MISS' in tree_value: 
+			self.treeFinM.insert('', index='end', values=tree_value)
+			self.treeFinM.update()
+
+	def affichage_FMFP(self):
+		while self.FMStop == False or self.FPStop == False:
+			tree_value = q.get().values()
+			tree_value = list(tree_value)
+			tree_value = tuple(tree_value)
+			now = datetime.datetime.now()
+			current_date = now.strftime("%d-%m-%Y %H:%M:%S")
+			tree_value = (current_date,) + tree_value
+			if 'FIN_MISS' in tree_value: 
+				self.treeFinM.insert('', index='end', values=tree_value)
+				self.treeFinM.update()
+				self.FMStop = True
+			elif 'CFP' in tree_value:
+				self.treeCFP.insert('', index='end', values=tree_value)
+				self.treeCFP.update()
+				self.FPStop = True
+
+	def affichage_DGFP(self):
+		while self.DGStop == False or self.FPStop == False:
+			tree_value = q.get().values()
+			tree_value = list(tree_value)
+			tree_value = tuple(tree_value)
+			now = datetime.datetime.now()
+			current_date = now.strftime("%d-%m-%Y %H:%M:%S")
+			tree_value = (current_date,) + tree_value
+			if 'GEOLOC' in tree_value: 
+				self.treeGeoloc.insert('', index='end', values=tree_value)
+				self.treeGeoloc.update()
+				self.DGStop = True
+			elif 'CFP' in tree_value:
+				self.treeCFP.insert('', index='end', values=tree_value)
+				self.treeCFP.update()
+				self.FPStop = True
+
+
+	def stop(self):
+		"""
+		"""
+		self.arret = True
+
+
+class Lancement(): #threading.Thread
 	"""
 	"""
-	def __init__(self, id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM):
-		#super( Lancement, self).__init__()
+	def __init__(self, id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP):
+		super().__init__()
 		self.id_s = id_s
 		self.opt = opt
 		self.q = q
@@ -72,138 +225,71 @@ class Lancement():
 		self.treeValM = treeValM
 		self.treeFinM = treeFinM
 		self.treeIHM = treeIHM
+		self.treeCFP = treeCFP
 		self.arret = False
 		self.send = None
+		self.affichage = None
+		#self.loop = None
 
 	def run(self):
 		if self.opt == "Geoloc":
 			self.send = Sendtram(self.opt, int(list_cb[self.id_s].get()))
-			self.send.start()
+			self.send.start() 
 			#-------Affichage des infos
-			while self.arret == False:
-				tree_value = self.q.get().values()
-				tree_value = list(tree_value)
-				tree_value = tuple(tree_value)
-				now = datetime.datetime.now()
-				current_date = now.strftime("%d-%m-%Y %H:%M:%S")
-				tree_value = (current_date,) + tree_value
-				print(tree_value)
-				if 'GEOLOC' in tree_value:
-					self.treeGeoloc.insert('', index='end', values=tree_value)
-					self.treeGeoloc.update()
-				elif 'VAL_MISS' in tree_value:
-					self.treeValM.insert('', index='end', values=tree_value)
-					self.treeValM.update()
-				elif 'FIN_MISS' in tree_value:
-					self.treeFinM.insert('', index='end', values=tree_value)
-					self.treeFinM.update()
-				time.sleep(2)
+			self.affichage = Affichage(self.opt, self.q, self.treeGeoloc, self.treeValM, self.treeFinM, self.treeIHM, self.treeCFP)
+			self.affichage.start()
 		elif self.opt == "Retournement":
 			#-------Envoi de la tram
 			self.send = Sendtram(self.opt, int(list_cb[self.id_s].get()))
-			self.send.start()
+			self.send.start() 
 			#-------Affichage des infos
-			while self.arret == False:
-				tree_value = self.q.get().values()
-				tree_value = list(tree_value)
-				tree_value = tuple(tree_value)
-				now = datetime.datetime.now()
-				current_date = now.strftime("%d-%m-%Y %H:%M:%S")
-				tree_value = (current_date,) + tree_value
-				print(tree_value)
-				if 'GEOLOC' in tree_value:
-					self.treeGeoloc.insert('', index='end', values=tree_value)
-					self.treeGeoloc.update()
-				elif 'FIN_MISS' in tree_value: 
-					self.treeFinM.insert('', index='end', values=tree_value)
-					self.treeFinM.update()
-				elif 'VIE' in tree_value:
-					self.treeIHM.insert('', index='end', values=tree_value)
-					self.treeIHM.update()
-				elif 'VAL_MISS' in tree_value:
-					self.treeValM.insert('', index='end', values=tree_value)
-					self.treeValM.update()
+			self.affichage = Affichage(self.opt, self.q, self.treeGeoloc, self.treeValM, self.treeFinM, self.treeIHM, self.treeCFP)
+			self.affichage.start()
+				
 
 	def stop(self):
 		"""
 		"""
 		self.send.stop()
-		self.send.join()
-		self.arret = True
+		self.affichage.stop()
+		#print("alive", self.send.is_alive())
+
 		
-
-def lancement(id_s):
-	"""
-	"""
-	if opt == "Geoloc":
-		send = Sendtram(opt, int(list_cb[id_s].get()))
-		send.start()
-		#-------Affichage des infos
-		while True:
-			tree_value = q.get().values()
-			tree_value = list(tree_value)
-			tree_value = tuple(tree_value)
-			now = datetime.datetime.now()
-			current_date = now.strftime("%d-%m-%Y %H:%M:%S")
-			tree_value = (current_date,) + tree_value
-			print(tree_value)
-			if 'GEOLOC' in tree_value:
-				treeGeoloc.insert('', index='end', values=tree_value)
-				treeGeoloc.update()
-			elif 'VAL_MISS' in tree_value:
-				treeValM.insert('', index='end', values=tree_value)
-				treeValM.update()
-			elif 'FIN_MISS' in tree_value:
-				treeFinM.insert('', index='end', values=tree_value)
-				treeFinM.update()
-			time.sleep(2)
-	elif opt == "Retournement":
-		#-------Envoi de la tram
-		send = Sendtram(opt, int(list_cb[id_s].get()))
-		send.start()
-		#-------Affichage des infos
-		while True:
-			tree_value = q.get().values()
-			tree_value = list(tree_value)
-			tree_value = tuple(tree_value)
-			now = datetime.datetime.now()
-			current_date = now.strftime("%d-%m-%Y %H:%M:%S")
-			tree_value = (current_date,) + tree_value
-			print(tree_value)
-			if 'GEOLOC' in tree_value:
-				treeGeoloc.insert('', index='end', values=tree_value)
-				treeGeoloc.update()
-			elif 'FIN_MISS' in tree_value: 
-				treeFinM.insert('', index='end', values=tree_value)
-				treeFinM.update()
-			elif 'VIE' in tree_value:
-				treeIHM.insert('', index='end', values=tree_value)
-				treeIHM.update()
-			elif 'VAL_MISS' in tree_value:
-				treeValM.insert('', index='end', values=tree_value)
-				treeValM.update()
-
 def lancer(id_s):
 	"""
 	Deroulement du scenario selectionner et affichage des informations des trames reseaux 
 	"""
-	global tt
-	print(id_s)
+	global scenar_1
+	global scenar_2
+	global scenar_3
+	global scenar_4
+	
+	
 	if id_s == 0:
-		tt = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM)#lancement(id_s)
-		tt.run()
+		scenar_1 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)#lancement(id_s)
+		scenar_1.run()
 	elif id_s == 1:
-		tt = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM)#lancement(id_s)
+		scenar_2 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)#lancement(id_s)
+		scenar_2.run()
 	elif id_s == 2:
-		tt = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM)#lancement(id_s)
+		scenar_3 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)#lancement(id_s)
+		scenar_3.run()
 	elif id_s == 3:
-		tt = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM)#lancement(id_s)
+		scenar_4 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)#lancement(id_s)
+		scenar_4.run()
 	
 def arreter(id_s):
 	"""
 	"""
-	tt.stop()
-	print(id_s)
+	if id_s == 0:
+		scenar_1.stop()
+	elif id_s == 1:
+		scenar_2.stop()
+	elif id_s == 2:
+		scenar_3.stop()
+	elif id_s == 3:
+		scenar_4.stop()
+	
 
 def boucler(id_s):
 	"""
@@ -211,8 +297,6 @@ def boucler(id_s):
 	b_name = label_simulation.nametowidget('boucle{}'.format(str(id_s+1)))	
 	print(list_cb[id_s].get())
 
-def getSaisie():
-	print(entryPE.get())
 
 def lancerFM():
 	"""
@@ -222,15 +306,9 @@ def lancerFM():
 	send = Sendtram("fin_mission", 0)
 	send.start()
 	#-------Affichage des infos
-	tree_value = q.get().values()
-	tree_value = list(tree_value)
-	tree_value = tuple(tree_value)
-	now = datetime.datetime.now()
-	current_date = now.strftime("%d-%m-%Y %H:%M:%S")
-	tree_value = (current_date,) + tree_value
-	if 'FIN_MISS' in tree_value: 
-		treeFinM.insert('', index='end', values=tree_value)
-		treeFinM.update()
+	affichage = Affichage("FM", q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)
+	affichage.start()
+	
 
 def lancerFMFP():
 	"""
@@ -240,19 +318,9 @@ def lancerFMFP():
 	send = Sendtram("fm_fp", 0)
 	send.start()
 	#-------Affichage des infos
-	while True:
-		tree_value = q.get().values()
-		tree_value = list(tree_value)
-		tree_value = tuple(tree_value)
-		now = datetime.datetime.now()
-		current_date = now.strftime("%d-%m-%Y %H:%M:%S")
-		tree_value = (current_date,) + tree_value
-		if 'FIN_MISS' in tree_value: 
-			treeFinM.insert('', index='end', values=tree_value)
-			treeFinM.update()
-		elif 'VIE' in tree_value:
-			treeIHM.insert('', index='end', values=tree_value)
-			treeIHM.update()
+	affichage = Affichage("FMFP", q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)
+	affichage.start()
+	
 
 def lancerDGFP():
 	"""
@@ -262,32 +330,35 @@ def lancerDGFP():
 	send = Sendtram("dg_fp", 0)
 	send.start()
 	#-------Affichage des infos
-	while True:
-		tree_value = q.get().values()
-		tree_value = list(tree_value)
-		tree_value = tuple(tree_value)
-		now = datetime.datetime.now()
-		current_date = now.strftime("%d-%m-%Y %H:%M:%S")
-		tree_value = (current_date,) + tree_value
-		if 'GEOLOC' in tree_value: 
-			treeGeoloc.insert('', index='end', values=tree_value)
-			treeGeoloc.update()
-		elif 'VIE' in tree_value:
-			treeIHM.insert('', index='end', values=tree_value)
-			treeIHM.update()
-	
+	affichage = Affichage("DGFP", q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)
+	affichage.start()
+
+def validation_lan():
+	"""
+	"""
+	global q
+	#Recuperation du port decoute
+	portE = entryPE.get()
+	print(type(entryPE.get()))
+	#Recuperation de avec ou sans udp
+	udp_filtre = udp_value.get()
+	print(type(udp_filtre))
+	#Recuperation de avec ou sans tcp
+	tcp_filtre = tcp_value.get()
+	print(tcp_filtre)
+	#---------Mise en ecoute du reseau local
+	q = queue.Queue()
+	sniffer = Sniffer(q, portE, udp_filtre, tcp_filtre)
+	sniffer.start()
+
 	
 	
 
-#------------------------------------------------Mise en ecoute du reseau local
-q = queue.Queue()
-sniffer = Sniffer(q)
-sniffer.start()
 #------------------------------------------------Creation de la fenetre principale
 root = tk.Tk()
 root.title("ABL LAN Simulator")
 root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(file='logo_sncf.png'))
-root.minsize(920, 900)
+root.minsize(920, 1000)
 root.configure(bg='#09041A')
 root.resizable(width=False, height=False)
 #------------------------------------------------Creation du label simulation
@@ -346,10 +417,6 @@ labelPE.grid(row=0, column=0, padx=10, pady=5)
 #--------Creation de la zone de saisie du numero de port
 entryPE = tk.Entry(label_config, bg='#F4F2F2', fg='#09041A', width=6)#,command=getSaisie)#textvariable=saisie,
 entryPE.grid(row=0, column=1, padx=0, pady=5)
-#--------Mise en ecoute du reseau local
-#q = queue.Queue()
-#sniffer = Sniffer(q)#, entryPE.get()
-#sniffer.start()
 #--------Creation du label protocole UDP
 labelProtocole = tk.Label(label_config, text="Protocle UDP", bg='#09041A', fg='#F4F2F2') 
 labelProtocole.grid(row=1, column=0, padx=10, pady=5)#, sticky='nw')
@@ -364,6 +431,10 @@ labelProtocole.grid(row=2, column=0, padx=10, pady=5)#, sticky='nw')
 tcp_value = tk.IntVar()
 boutton_TCP = tk.Checkbutton(label_config, variable=tcp_value, bg='#09041A', relief="flat")#, command=surimpression)#, relief="solid")
 boutton_TCP.grid(row=2, column=1, padx=0, pady=5, sticky='w')
+#-------Creation du boutton valider pour la validation de la configuration reseau
+validation_button = tk.Button(label_config, text="Valider", command=validation_lan)
+validation_button['font'] = font.Font(size=5)
+validation_button.grid(row=3, column=0, padx=15, pady=5, sticky='w')
 
 #--------------------------------------------------Creation du label simulation declencheur
 label_declencheur = tk.LabelFrame(root, text="Simulation declencheurs", bg='#09041A', fg='#F4F2F2', width=295, height=150, borderwidth=1)
@@ -414,7 +485,7 @@ treeGeoloc.configure(yscrollcommand=sb_geoloc.set)
 sb_geoloc.config(command=treeGeoloc.yview)
 treeGeoloc.pack()
 #---------------
-geoloc_layout =[("horodate",[80,"Horodate"]), ("type",[50,"Type"]), ("date",[110, "Date"]), ("heure",[100, "Heure"]),
+geoloc_layout =[("horodate",[80,"Horodate"]), ("type",[70,"Type"]), ("date",[90, "Date"]), ("heure",[100, "Heure"]),
                    ("latitude",[100, "Lat."]), ("longitude",[100, "Lon."]), ("code_mission",[70, "Mission"]),
                    ("gare_precedente",[60, "Gare P"]),("gare_courante",[60, "Gare C"]),("gare_suivante",[60, "Gare S"]),
                    ("distance_odo",[96, "Dist Odo"])]
@@ -445,7 +516,7 @@ treeValM.configure(yscrollcommand=sb_ValM.set)
 sb_ValM.config(command=treeValM.yview)
 treeValM.pack()
 #--------------
-valM_layout = [("horodate",[187,"Horodate"]), ("id_src",[170,"Source"]), ("id_dst",[170,"Destination"]), ("type",[180,"Type"]), ("code_trame",[180, "Code Mission"])]
+valM_layout = [("horodate",[187,"Horodate"]), ("id_src",[170,"Source"]), ("id_dst",[170,"Destination"]), ("type",[90,"Type"]), ("code_trame",[135, "Code Trame"]), ("type_trame",[135, "Type Trame"])]
 valM_layout = OrderedDict(valM_layout)
 valM_columns = [key for key,_ in valM_layout.items()]
 treeValM["columns"] = valM_columns
@@ -472,7 +543,7 @@ treeFinM.configure(yscrollcommand=sb_FinM.set)
 sb_FinM.config(command=treeFinM.yview)
 treeFinM.pack()
 #--------------
-finM_layout = [("horodate",[187,"Horodate"]), ("id_src",[170,"Source"]), ("id_dst",[170,"Destination"]), ("type",[180,"Type"]), ("code_trame",[180, "Code Mission"])]
+finM_layout = [("horodate",[187,"Horodate"]), ("id_src",[170,"Source"]), ("id_dst",[170,"Destination"]), ("type",[90,"Type"]), ("code_trame",[135, "Code Trame"]), ("type_trame",[135, "Type Trame"])]
 finM_layout = OrderedDict(finM_layout)
 finM_columns = [key for key,_ in finM_layout.items()]
 treeFinM["columns"] = finM_columns
@@ -481,6 +552,7 @@ treeFinM['show'] = 'headings'
 for key, value in finM_layout.items():
     treeFinM.heading(key, text = value[1], anchor=tk.W)
     treeFinM.column(key, width=value[0], minwidth=value[0], stretch=tk.YES)
+
 #-----------------------------------------------------Trame Etat IHM
 #--------------Creation du titre trame Etat IHM
 label_geoloc = tk.LabelFrame(root, text="Trame Etat IHM", labelanchor='n', bg='#09041A', fg='#F4F2F2', width=905, height=20, borderwidth=1)
@@ -510,11 +582,35 @@ for key, value in IHM_layout.items():
     treeIHM.heading(key, text = value[1], anchor=tk.W)
     treeIHM.column(key, width=value[0], minwidth=value[0], stretch=tk.YES)
 
+#-----------------------------------------------------Trame Fermeture Porte
+#--------------Creation du titre trame Fin_Mission
+label_geoloc = tk.LabelFrame(root, text="Trame CFP", labelanchor='n', bg='#09041A', fg='#F4F2F2', width=905, height=20, borderwidth=1)
+label_geoloc.grid_propagate(0)
+label_geoloc.place(x=5, y=830)
+#--------------Treeview Frame
+treeFP_frame = tk.Frame(root)
+treeFP_frame.place(x=5, y=850)
+#--------------Barre de defilement
+sb_FP = ttk.Scrollbar(treeFP_frame)
+sb_FP.pack(side="right", fill="y")
+#--------------TreeView Fermeture Porte
+treeCFP = ttk.Treeview(treeFP_frame, height=5)
+treeCFP.configure(yscrollcommand=sb_FP.set)
+#--------------Configurer la barre de defilement
+sb_IHM.config(command=treeCFP.yview)
+treeCFP.pack()
+#--------------
+FP_layout = [("horodate",[187,"Horodate"]), ("id_src",[170,"Source"]), ("id_dst",[170,"Destination"]), ("type",[90,"Type"]), ("code_trame",[135, "Code Trame"]), ("type_trame",[135, "Type Trame"])]
+FP_layout = OrderedDict(FP_layout)
+FP_columns = [key for key,_ in FP_layout.items()]
+treeCFP["columns"] = FP_columns
+treeCFP['show'] = 'headings'
+#---------------
+for key, value in FP_layout.items():
+    treeCFP.heading(key, text = value[1], anchor=tk.W)
+    treeCFP.column(key, width=value[0], minwidth=value[0], stretch=tk.YES)
 
 
 
-
-
-         
 root.mainloop()
 
