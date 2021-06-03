@@ -39,10 +39,12 @@ class Sendtram(threading.Thread):
 		self.sortie_normal = False
 		self.scenario = scenario
 		self.bouble = bouble
+		print("bouble", bouble)
 
 	def run(self):
 		"""
 		Excecution des scenarios
+		"""
 		"""
 		if self.bouble == 1:
 			while True:
@@ -51,6 +53,8 @@ class Sendtram(threading.Thread):
 					break
 		else:
 			self.sending()
+		"""
+		self.sending()
 
 	
 	def stop(self):
@@ -69,6 +73,8 @@ class Sendtram(threading.Thread):
 			"""
 			#Recuperation des infos trames dans un dictionnaire
 			dic_trameConfig = self.get_trameConfig()
+			#Recuperation du temps de latence entre deux trames
+			dic_delay = self.getDelay("trame_delay.txt")
 			#Instantiation dun compteur pour lindex de la trame validation mission
 			index_ValM = 0
 			#Instantiation dun compteur pour lindex de la trame fin mission
@@ -98,7 +104,9 @@ class Sendtram(threading.Thread):
 				answer_valM=sr1(packet_valmission, timeout=1)
 				#Mise a jour de lindex
 				index_ValM +=1
-				time.sleep(5)
+				#Gestion du temps de latence entre trames
+				geoloc_delay = dic_delay.get("Geoloc")
+				time.sleep(int(geoloc_delay[0]))
 				#------------------------------Traitement des trames de geolocalisation
 				#Recuperation de la latitude et de la longitude 
 				list_pos = self.getPos()
@@ -127,9 +135,13 @@ class Sendtram(threading.Thread):
 					packet_geoloc /= UDP(sport=int(list_lanData[2]), dport=int(list_lanData[3]))
 					packet_geoloc /= Raw(load=msg_geoloc)
 					answer_geoloc=sr1(packet_geoloc, timeout=1)
-					time.sleep(5)
 					#Mise a jour distance odometrique
 					d_odo += 76
+					#Gestion du temps entre deux trames
+					if arret_TVS[1] != "INV":
+						time.sleep(int(geoloc_delay[1]))
+					else:
+						time.sleep(int(geoloc_delay[2]))	
 				#-------------------------------Traitement de la trame fin mission
 				if self.arret == True:
 					break
@@ -163,6 +175,8 @@ class Sendtram(threading.Thread):
 				#Instantiation dun compteur pour la distance odometrique de la trame geolocalisation
 				d_odo = 21620
 				nbr_pos = 282
+				#Gestion du temps de latence entre trames
+				retournement_delay = dic_delay.get("Retournement")
 				for i in range(len(list_pos)):
 					if self.arret == True:
 						break
@@ -182,11 +196,14 @@ class Sendtram(threading.Thread):
 					packet_geoloc /= UDP(sport=int(list_lanData[2]), dport=int(list_lanData[3]))
 					packet_geoloc /= Raw(load=msg_geoloc)
 					answer_geoloc=sr1(packet_geoloc, timeout=1)
-					time.sleep(5)
 					#Mise a jour distance odometrique
 					d_odo += 76
 					nbr_pos += 1
-
+					#Gestion du temps entre deux trames
+					if arret_TVS[1] != "INV":
+						time.sleep(int(retournement_delay[0]))
+					else:
+						time.sleep(int(retournement_delay[1]))
 				#-------------------------------Traitement de la trame fin mission
 				if self.arret == True:
 					break
@@ -210,6 +227,8 @@ class Sendtram(threading.Thread):
 				answer_FinM=sr1(packet_finmission, timeout=1)
 				#Mise a jour de lindex
 				index_FinM +=1
+				#Gestion du temps de latence entre deux trames
+				time.sleep(int(retournement_delay[2]))
 				#-------------------------------Traitement de la trame etat IHM
 				if self.arret == True:
 					break
@@ -237,7 +256,8 @@ class Sendtram(threading.Thread):
 				answer_EIHM_A = sr1(packet_EIHM_A, timeout=1)
 				#Mise a jour de lindex
 				index_EIHM +=1
-				time.sleep(15)
+				#Gestion du temps de latence entre deux trames
+				time.sleep(int(retournement_delay[3]))
 				#-----------Traitement de la trame Ferture Porte
 				if self.arret == True:
 					break
@@ -272,7 +292,8 @@ class Sendtram(threading.Thread):
 				#Mise a jour de lindex
 				index_EIHM +=1
 				"""
-				time.sleep(5)
+				#Gestion du temps de latence entre deux trames
+				time.sleep(int(retournement_delay[4]))
 				#------------Constitution du troisieme message de la tram IHM
 				if self.arret == True:
 					break
@@ -291,7 +312,8 @@ class Sendtram(threading.Thread):
 				answer_EIHM_C = sr1(packet_EIHM_C, timeout=1)
 				#Mise a jour de lindex
 				index_EIHM +=1
-				time.sleep(5)
+				#Gestion du temps de latence entre deux trames
+				time.sleep(int(retournement_delay[5]))
 				#Constitution du quatrieme message de la tram IHM
 				if self.arret == True:
 					break
@@ -310,7 +332,8 @@ class Sendtram(threading.Thread):
 				answer_EIHM_D = sr1(packet_EIHM_D, timeout=1)
 				#Mise a jour de lindex
 				index_EIHM +=1
-				time.sleep(5)
+				#Gestion du temps de latence entre deux trames
+				time.sleep(int(retournement_delay[6]))
 				#-------------------------------Traitement de la trame validation mission
 				if self.arret == True:
 					break
@@ -330,7 +353,7 @@ class Sendtram(threading.Thread):
 				answer_valM=sr1(packet_valmission, timeout=1)
 				#Mise a jour de lindex
 				index_ValM +=1
-				time.sleep(5)
+				#time.sleep(5)
 			elif self.scenario == "fin_mission":
 				#-------------------------------Traitement de la trame fin mission
 				#Recuperation de la trame fin mission
@@ -354,6 +377,9 @@ class Sendtram(threading.Thread):
 				if self.arret == True:
 					break
 			elif self.scenario == "fm_fp":
+				#dic_delay = self.getDelay("trame_delay.txt")
+				#fm_fp_delay = dic_delay.get("fm_fp")
+				#print(fm_fp_delay)
 				#-------------------------------Traitement de la trame fin mission
 				#Recuperation de la trame fin mission
 				dic_Fin_Miss = dic_trameConfig.get("Fin_Miss")
@@ -373,7 +399,9 @@ class Sendtram(threading.Thread):
 				answer_FinM=sr1(packet_finmission, timeout=1)
 				#Mise a jour de lindex
 				index_FinM +=1
-				time.sleep(5)
+				#Gestion du temps de pose entre trames
+				fm_fp_delay = dic_delay.get("fm_fp")
+				time.sleep(int(fm_fp_delay[0]))
 				#if self.arret == True:
 				#	break
 				#-------------------------------Traitement de la trame Ferture Porte
@@ -446,8 +474,9 @@ class Sendtram(threading.Thread):
 				packet_geoloc /= UDP(sport=int(list_lanData[2]), dport=int(list_lanData[3]))
 				packet_geoloc /= Raw(load=msg_geoloc)
 				answer_geoloc=sr1(packet_geoloc, timeout=1)
-				time.sleep(5)
-		
+				#Gestion du temps de latence entre trames
+				dg_fp_delay = dic_delay.get("dg_fp")
+				time.sleep(int(dg_fp_delay[0]))
 				#-------------------------------Traitement de la trame Ferture Porte
 				#Recuperation de la trame Etat IHM
 				dic_CFP = dic_trameConfig.get("Cfp")
@@ -464,7 +493,10 @@ class Sendtram(threading.Thread):
 				packet_CFP /= Raw(load=msg_CFP)
 				packet_CFP = sr1(packet_CFP, timeout=1)
 			#Arret de la boucle while 
-			self.sortie_normal = True
+			#Gestion du mode boucle
+			if self.bouble == 0: 
+				self.sortie_normal = True
+
 			
 			
 
@@ -529,6 +561,19 @@ class Sendtram(threading.Thread):
 		elif numTram == int(list_numTram[5]):
 			gare_name = (list_TVS[4],list_TVS[5],"")	
 		return gare_name
+
+	def getDelay(self, file):
+		"""
+		Recuperer le temps de latence entre chacune des trames de chacun des scenarios
+		"""
+		dic_d = {}
+		with open(file) as txtfile:
+			data = txtfile.readlines()
+			for row in data:
+				row = row.strip()
+				temp = row.split(" ")
+				dic_d[temp[0]] = temp[1:]
+		return dic_d
 
 
 #----------------------Classe permettant de sniffer le reseau local

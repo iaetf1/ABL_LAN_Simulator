@@ -19,6 +19,10 @@ import time
 def getScenarios(fichier):
 	"""
 	Chargement des scenarios a simuler
+	Arg:
+	fichier: variable de type txt contenant les noms des scenarios pouvant etre simules
+	Return:
+	list_scenarios: variable de type list contenant les noms des scenarios pouvant etre simules
 	"""
 	list_scenarios = []
 	with open(fichier) as txtfile:
@@ -32,16 +36,13 @@ def getScenarios(fichier):
 
 def getOption(event, id_s):
 	"""
-	Recupere le scenario qui a ete selectionne
+	Recupere le nom du scenario qui a ete selectionne
+	Arg:
+	id_s: variable de type int contenant le numero identifiant du scenario selectionne
+	Return:
+	opt: variable de type string contenant loption ou le nom du scenario selectionne
 	"""
 	global opt
-	global opt_0
-	global opt_1
-	global opt_2
-	global opt_3
-
-	#s_name = label_simulation.nametowidget('s{}_cbbx'.format(str(id_s+1)))
-
 	if id_s == 0:
 		s_name = label_simulation.nametowidget('s{}_cbbx'.format(str(id_s+1)))
 		opt = s_name.get()
@@ -55,21 +56,11 @@ def getOption(event, id_s):
 		s_name = label_simulation.nametowidget('s{}_cbbx'.format(str(id_s+1)))
 		opt = s_name.get()
 
-	#print(opt,"boutton:",id_s, type(opt))
-	
-
-def getDeclencheur(event, id_dcl):
-	"""
-	"""
-	dcl_name = label_simulation.nametowidget('declencheur{}_cbbx'.format(str(id_dcl+1)))	
-	opt = dcl_name.get()
-	print(opt,"boutton:",id_dcl)
-
-def boucle_t():
-	while True:
-		print("Boucle")
 
 class Affichage(threading.Thread):
+	"""
+	Classe enfant de la classe Thread. Permet d'afficher des infos de trames sur lihm
+	"""
 	def  __init__(self, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP):
 		#super().__init__()
 		super(Affichage, self).__init__()
@@ -115,15 +106,15 @@ class Affichage(threading.Thread):
 			#print(tree_value)
 			if 'GEOLOC' in tree_value:
 				print(tree_value)
-				self.treeGeoloc.insert('', index='end', values=tree_value)
+				self.treeGeoloc.insert('', index=0, values=tree_value)
 				self.treeGeoloc.update()
 			elif 'VAL_MISS' in tree_value:
 				print(tree_value)
-				self.treeValM.insert('', index='end', values=tree_value)
+				self.treeValM.insert('', index=0, values=tree_value)
 				self.treeValM.update()
 			elif 'FIN_MISS' in tree_value:
 				print(tree_value)
-				self.treeFinM.insert('', index='end', values=tree_value)
+				self.treeFinM.insert('', index=0, values=tree_value)
 				self.treeFinM.update()
 
 	def affichage_retournement(self):
@@ -140,23 +131,23 @@ class Affichage(threading.Thread):
 			#print(tree_value)
 			if 'GEOLOC' in tree_value:
 				print("Geoloc",tree_value)
-				self.treeGeoloc.insert('', index='end', values=tree_value)
+				self.treeGeoloc.insert('', index=0, values=tree_value)
 				self.treeGeoloc.update()
 			elif 'FIN_MISS' in tree_value: 
 				print("aff Retour")
 				print("Fin_Mission",tree_value)
-				self.treeFinM.insert('', index='end', values=tree_value)
+				self.treeFinM.insert('', index=0, values=tree_value)
 				self.treeFinM.update()
 			elif 'IHM' in tree_value:
 				print("IHM", tree_value)
-				self.treeIHM.insert('', index='end', values=tree_value)
+				self.treeIHM.insert('', index=0, values=tree_value)
 				self.treeIHM.update()
 			elif 'VAL_MISS' in tree_value:
 				print("Ret", tree_value)
-				self.treeValM.insert('', index='end', values=tree_value)
+				self.treeValM.insert('', index=0, values=tree_value)
 				self.treeValM.update()
 			elif 'CFP' in tree_value:
-				self.treeCFP.insert('', index='end', values=tree_value)
+				self.treeCFP.insert('', index=0, values=tree_value)
 				self.treeCFP.update()
 
 	def affichage_FM(self):
@@ -169,7 +160,7 @@ class Affichage(threading.Thread):
 		current_date = now.strftime("%d-%m-%Y %H:%M:%S")
 		tree_value = (current_date,) + tree_value
 		if 'FIN_MISS' in tree_value: 
-			self.treeFinM.insert('', index='end', values=tree_value)
+			self.treeFinM.insert('', index=0, values=tree_value)
 			self.treeFinM.update()
 
 	def affichage_FMFP(self):
@@ -181,11 +172,11 @@ class Affichage(threading.Thread):
 			current_date = now.strftime("%d-%m-%Y %H:%M:%S")
 			tree_value = (current_date,) + tree_value
 			if 'FIN_MISS' in tree_value: 
-				self.treeFinM.insert('', index='end', values=tree_value)
+				self.treeFinM.insert('', index=0, values=tree_value)
 				self.treeFinM.update()
 				self.FMStop = True
 			elif 'CFP' in tree_value:
-				self.treeCFP.insert('', index='end', values=tree_value)
+				self.treeCFP.insert('', index=0, values=tree_value)
 				self.treeCFP.update()
 				self.FPStop = True
 
@@ -198,11 +189,11 @@ class Affichage(threading.Thread):
 			current_date = now.strftime("%d-%m-%Y %H:%M:%S")
 			tree_value = (current_date,) + tree_value
 			if 'GEOLOC' in tree_value: 
-				self.treeGeoloc.insert('', index='end', values=tree_value)
+				self.treeGeoloc.insert('', index=0, values=tree_value)
 				self.treeGeoloc.update()
 				self.DGStop = True
 			elif 'CFP' in tree_value:
-				self.treeCFP.insert('', index='end', values=tree_value)
+				self.treeCFP.insert('', index=0, values=tree_value)
 				self.treeCFP.update()
 				self.FPStop = True
 
@@ -268,35 +259,55 @@ def lancer(id_s):
 	if id_s == 0:
 		scenar_1 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)#lancement(id_s)
 		scenar_1.run()
+		actived(id_s)
 	elif id_s == 1:
 		scenar_2 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)#lancement(id_s)
 		scenar_2.run()
+		actived(id_s)
 	elif id_s == 2:
 		scenar_3 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)#lancement(id_s)
 		scenar_3.run()
+		actived(id_s)
 	elif id_s == 3:
 		scenar_4 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)#lancement(id_s)
 		scenar_4.run()
+		actived(id_s)
 	
 def arreter(id_s):
 	"""
 	"""
 	if id_s == 0:
 		scenar_1.stop()
+		deactived(id_s)
 	elif id_s == 1:
 		scenar_2.stop()
+		deactived(id_s)
 	elif id_s == 2:
 		scenar_3.stop()
+		deactived(id_s)
 	elif id_s == 3:
 		scenar_4.stop()
-	
+		deactived(id_s)
 
-def boucler(id_s):
+def actived(id_s):
 	"""
+	Faire passer des fenetres du gris au vert
+	Args:
+	id_s: entier representant id du process associe a la fenetre qui doit 
+	changer de couleur
 	"""
-	b_name = label_simulation.nametowidget('boucle{}'.format(str(id_s+1)))	
-	print(list_cb[id_s].get())
+	s_name = label_simulation.nametowidget('lancer{}'.format(str(id_s)))
+	s_name['bg'] = '#6FD155'
 
+def deactived(id_s):
+	"""
+	Faire passer des fenetres du vert au girs
+	Args:
+	id_s: entier representant id du process associe a la fenetre qui doit 
+	changer de couleur
+	"""	
+	s_name = label_simulation.nametowidget('lancer{}'.format(str(id_s)))
+	s_name['bg'] = '#F4F2F2'
 
 def lancerFM():
 	"""
@@ -351,6 +362,24 @@ def validation_lan():
 	sniffer = Sniffer(q, portE, udp_filtre, tcp_filtre)
 	sniffer.start()
 
+
+def supprimer(index):
+	if index == 1:
+		for record in treeGeoloc.get_children():
+			treeGeoloc.delete(record)
+	elif index == 2:
+		for record in treeValM.get_children():
+			treeValM.delete(record)
+	elif index == 3:
+		for record in treeFinM.get_children():
+			treeFinM.delete(record)
+	elif index == 4:
+		for record in treeIHM.get_children():
+			treeIHM.delete(record)
+	elif index == 5:
+		for record in treeCFP.get_children():
+			treeCFP.delete(record)
+	
 	
 	
 
@@ -464,9 +493,15 @@ boutton_lancerDGFP.grid(row=2, column=1, padx=10, pady=5, sticky='w')
 
 #-----------------------------------------------------Trame de geolocalisation
 #----------------Creation du titre trame de geolocalisation
-label_geoloc = tk.LabelFrame(root, text="Trame de Geolocalisation", labelanchor='n', bg='#09041A', fg='#F4F2F2', width=905, height=20, borderwidth=1)
+label_geoloc = tk.LabelFrame(root, text="Trame de Geolocalisation", labelanchor='n', bg='#09041A', fg='#F4F2F2', width=904, height=20, borderwidth=1)
 label_geoloc.grid_propagate(0)
 label_geoloc.place(x=5, y=155)
+#----------------Creation du boutton de nettoyage
+pixelVirtuel_G = tk.PhotoImage(width=1, height=1)
+supp_geoloc = tk.Button(root, text="", command=lambda i=1:supprimer(1), image=pixelVirtuel_G, width=8, height=3, compound="c", bg='#AC4C58')
+supp_geoloc['font'] = font.Font(size=1)
+supp_geoloc.grid_propagate(0)
+supp_geoloc.place(x=894, y=164)
 #---------------Style treegeoloc
 style = ttk.Style()
 style.configure("Treeview", bg="#09041A", fg='#F4F2F2', rowheight=25, fieldbackground="#09041A")
@@ -503,6 +538,12 @@ for key, value in geoloc_layout.items():
 label_geoloc = tk.LabelFrame(root, text="Trame de Validation Mission", labelanchor='n', bg='#09041A', fg='#F4F2F2', width=905, height=20, borderwidth=1)
 label_geoloc.grid_propagate(0)
 label_geoloc.place(x=5, y=325)
+#----------------Creation du boutton de nettoyage
+pixelVirtuel = tk.PhotoImage(width=1, height=1)
+supp_VM = tk.Button(root, text="", command=lambda i=2:supprimer(2), image=pixelVirtuel, width=8, height=3, compound="c", bg='#AC4C58')
+supp_VM['font'] = font.Font(size=1)
+supp_VM.grid_propagate(0)
+supp_VM.place(x=895, y=334)
 #--------------Treeview Frame
 treeValM_frame = tk.Frame(root)
 treeValM_frame.place(x=5, y=345)
@@ -530,9 +571,15 @@ for key, value in valM_layout.items():
 label_geoloc = tk.LabelFrame(root, text="Trame de Fin Mission", labelanchor='n', bg='#09041A', fg='#F4F2F2', width=905, height=20, borderwidth=1)
 label_geoloc.grid_propagate(0)
 label_geoloc.place(x=5, y=495)
+#----------------Creation du boutton de nettoyage
+pixelVirtuel_FM = tk.PhotoImage(width=1, height=1)
+supp_FM = tk.Button(root, text="", command=lambda i=3:supprimer(3), image=pixelVirtuel_FM, width=8, height=3, compound="c", bg='#AC4C58')
+supp_FM['font'] = font.Font(size=1)
+supp_FM.grid_propagate(0)
+supp_FM.place(x=895, y=504)
 #--------------Treeview Frame
 treeFinM_frame = tk.Frame(root)
-treeFinM_frame.place(x=5, y=513)
+treeFinM_frame.place(x=5, y=514)
 #--------------Barre de defilement
 sb_FinM = ttk.Scrollbar(treeFinM_frame)
 sb_FinM.pack(side="right", fill="y")
@@ -558,6 +605,12 @@ for key, value in finM_layout.items():
 label_geoloc = tk.LabelFrame(root, text="Trame Etat IHM", labelanchor='n', bg='#09041A', fg='#F4F2F2', width=905, height=20, borderwidth=1)
 label_geoloc.grid_propagate(0)
 label_geoloc.place(x=5, y=660)
+#----------------Creation du boutton de nettoyage
+pixelVirtuel_IHM = tk.PhotoImage(width=1, height=1)
+supp_IHM = tk.Button(root, text="", command=lambda i=4:supprimer(4), image=pixelVirtuel_IHM, width=8, height=3, compound="c", bg='#AC4C58')
+supp_IHM['font'] = font.Font(size=1)
+supp_IHM.grid_propagate(0)
+supp_IHM.place(x=896, y=669)
 #--------------Treeview Frame
 treeIHM_frame = tk.Frame(root)
 treeIHM_frame.place(x=5, y=680)
@@ -587,6 +640,12 @@ for key, value in IHM_layout.items():
 label_geoloc = tk.LabelFrame(root, text="Trame CFP", labelanchor='n', bg='#09041A', fg='#F4F2F2', width=905, height=20, borderwidth=1)
 label_geoloc.grid_propagate(0)
 label_geoloc.place(x=5, y=830)
+#----------------Creation du boutton de nettoyage
+pixelVirtuel_FP = tk.PhotoImage(width=1, height=1)
+supp_FP = tk.Button(root, text="", command=lambda i=5:supprimer(5), image=pixelVirtuel_FP, width=8, height=3, compound="c", bg='#AC4C58')
+supp_FP['font'] = font.Font(size=1)
+supp_FP.grid_propagate(0)
+supp_FP.place(x=895, y=839)
 #--------------Treeview Frame
 treeFP_frame = tk.Frame(root)
 treeFP_frame.place(x=5, y=850)
