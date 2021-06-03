@@ -60,12 +60,18 @@ def getOption(event, id_s):
 class Affichage(threading.Thread):
 	"""
 	Classe enfant de la classe Thread. Permet d'afficher des infos de trames sur lihm
+	Arg:
+	opt: String contenant le nom de loption selectionnee au niveau du scenario 
+	q: Queue contenant les elements de thread
+	treeGeoloc: variable contenant la treeview permettant dafficher les informations de la trame Geolocalisation 
+	treeValM: variable contenant la treeview permettant dafficher les informations de la trame de Validation Mission
+	treeFinM: variable contenant la treeview permettant dafficher les informations de la trame de Fin Mission
+	treeIHM: variable contenant la treeview permettant dafficher les informations de la trame de Etat IHM
+	treeCFP: variable contenant la treeview permettant dafficher les informations de la trame de Fermeture Porte
 	"""
 	def  __init__(self, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP):
-		#super().__init__()
 		super(Affichage, self).__init__()
 		self.opt = opt
-		#self.opt_FM = True
 		self.q = q
 		self.treeGeoloc = treeGeoloc
 		self.treeValM = treeValM
@@ -79,13 +85,15 @@ class Affichage(threading.Thread):
 
 	def run(self):
 		"""
+		Permet dafficher les infos de trames en fonction de loption selectionnee
+		Arg:
+		Return:
 		"""
 		if self.opt == "Geoloc":
 			self.affichage_geoloc()
 		elif self.opt == "Retournement":
 			self.affichage_retournement()
 		elif self.opt == "FM":
-			print("passage")
 			self.affichage_FM()
 		elif self.opt == "FMFP":
 			self.affichage_FMFP()
@@ -95,6 +103,10 @@ class Affichage(threading.Thread):
 
 	def affichage_geoloc(self):
 		"""
+		Recupere les informations des trames constituantes le scenario geolocalisation
+		Insertion des informations dans les treeviews concernees
+		Arg:
+		Return:
 		"""
 		while self.arret == False:
 			tree_value = self.q.get().values()
@@ -119,6 +131,10 @@ class Affichage(threading.Thread):
 
 	def affichage_retournement(self):
 		"""
+		Recupere les informations des trames constituantes le scenario retournement
+		Insertion des informations dans les treeviews concernees
+		Arg:
+		Return:
 		"""
 		while self.arret == False:
 			print("aff Retournement")
@@ -152,6 +168,10 @@ class Affichage(threading.Thread):
 
 	def affichage_FM(self):
 		"""
+		Recupere les informations de la trame Fin de Mission
+		Insertion des informations dans les treeviews concernees
+		Arg:
+		Return:
 		"""
 		tree_value = self.q.get().values()
 		tree_value = list(tree_value)
@@ -164,6 +184,12 @@ class Affichage(threading.Thread):
 			self.treeFinM.update()
 
 	def affichage_FMFP(self):
+		"""
+		Recupere les informations des trames Fin de Mission et Fermeture Porte
+		Insertion des informations dans les treeviews concernees
+		Arg:
+		Return:
+		"""
 		while self.FMStop == False or self.FPStop == False:
 			tree_value = q.get().values()
 			tree_value = list(tree_value)
@@ -181,6 +207,12 @@ class Affichage(threading.Thread):
 				self.FPStop = True
 
 	def affichage_DGFP(self):
+		"""
+		Recupere les informations des trames  Derniere Gare et Fermeture Porte
+		Insertion des informations dans les treeviews concernees
+		Arg:
+		Return:
+		"""
 		while self.DGStop == False or self.FPStop == False:
 			tree_value = q.get().values()
 			tree_value = list(tree_value)
@@ -200,12 +232,25 @@ class Affichage(threading.Thread):
 
 	def stop(self):
 		"""
+		Indique larret grace au passe de la variable a True
+		Arg:
+		Return:
 		"""
 		self.arret = True
 
 
 class Lancement(): #threading.Thread
 	"""
+	Permet de lancer les differents scenarios 
+	Arg:
+	id_s: String contenant lidentifiant du scenario slectionne par lutilisateur
+	opt: String contenant le nom de loption selectionnee au niveau du scenario 
+	q: Queue contenant les elements de thread
+	treeGeoloc: variable contenant la treeview permettant dafficher les informations de la trame Geolocalisation 
+	treeValM: variable contenant la treeview permettant dafficher les informations de la trame de Validation Mission
+	treeFinM: variable contenant la treeview permettant dafficher les informations de la trame de Fin Mission
+	treeIHM: variable contenant la treeview permettant dafficher les informations de la trame de Etat IHM
+	treeCFP: variable contenant la treeview permettant dafficher les informations de la trame de Fermeture Porte
 	"""
 	def __init__(self, id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP):
 		super().__init__()
@@ -220,9 +265,11 @@ class Lancement(): #threading.Thread
 		self.arret = False
 		self.send = None
 		self.affichage = None
-		#self.loop = None
 
 	def run(self):
+		"""
+		Envoi des trames permettant de realiser les scenarios Geoloc et Retournement
+		"""
 		if self.opt == "Geoloc":
 			self.send = Sendtram(self.opt, int(list_cb[self.id_s].get()))
 			self.send.start() 
@@ -240,15 +287,20 @@ class Lancement(): #threading.Thread
 
 	def stop(self):
 		"""
+		Arret de lenvoi des trames ainsi que de laffichage des informations dans lihm
+		Arg:
+		Return:
 		"""
 		self.send.stop()
 		self.affichage.stop()
-		#print("alive", self.send.is_alive())
 
 		
 def lancer(id_s):
 	"""
 	Deroulement du scenario selectionner et affichage des informations des trames reseaux 
+	Arg:
+	id_s: int representant le lidentifiant du scenario selectionne
+	Return:
 	"""
 	global scenar_1
 	global scenar_2
@@ -257,24 +309,28 @@ def lancer(id_s):
 	
 	
 	if id_s == 0:
-		scenar_1 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)#lancement(id_s)
+		scenar_1 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)
 		scenar_1.run()
 		actived(id_s)
 	elif id_s == 1:
-		scenar_2 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)#lancement(id_s)
+		scenar_2 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)
 		scenar_2.run()
 		actived(id_s)
 	elif id_s == 2:
-		scenar_3 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)#lancement(id_s)
+		scenar_3 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)
 		scenar_3.run()
 		actived(id_s)
 	elif id_s == 3:
-		scenar_4 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)#lancement(id_s)
+		scenar_4 = Lancement(id_s, opt, q, treeGeoloc, treeValM, treeFinM, treeIHM, treeCFP)
 		scenar_4.run()
 		actived(id_s)
 	
 def arreter(id_s):
 	"""
+	Permet darreter un scenario en cours dexecution
+	Arg:
+	id_s: Entier contenant lid du scenario que lutilisateur veut arreter
+	Return:
 	"""
 	if id_s == 0:
 		scenar_1.stop()
@@ -295,6 +351,7 @@ def actived(id_s):
 	Args:
 	id_s: entier representant id du process associe a la fenetre qui doit 
 	changer de couleur
+	Return:
 	"""
 	s_name = label_simulation.nametowidget('lancer{}'.format(str(id_s)))
 	s_name['bg'] = '#6FD155'
@@ -305,13 +362,16 @@ def deactived(id_s):
 	Args:
 	id_s: entier representant id du process associe a la fenetre qui doit 
 	changer de couleur
+	Return:
 	"""	
 	s_name = label_simulation.nametowidget('lancer{}'.format(str(id_s)))
 	s_name['bg'] = '#F4F2F2'
 
 def lancerFM():
 	"""
-	Lancer le scenario selectionner
+	Lancer lexecution du declencheur FM et affichage des informations
+	Arg:
+	Return:
 	"""
 	#-------Envoi de la tram
 	send = Sendtram("fin_mission", 0)
@@ -323,7 +383,9 @@ def lancerFM():
 
 def lancerFMFP():
 	"""
-	Lancer le scenario selectionner
+	Lancer lexecution du declencheur FM_FP et affichage des informations
+	Arg:
+	Return:
 	"""
 	#-------Envoi de la tram
 	send = Sendtram("fm_fp", 0)
@@ -335,7 +397,9 @@ def lancerFMFP():
 
 def lancerDGFP():
 	"""
-	Lancer le scenario selectionner
+	Lancer lexecution du declencheur DG_FP et affichage des informations
+	Arg:
+	Return:
 	"""
 	#-------Envoi de la tram
 	send = Sendtram("dg_fp", 0)
@@ -346,6 +410,9 @@ def lancerDGFP():
 
 def validation_lan():
 	"""
+	Recuperation des informations de configuration reseau et mise en ecoute du reseau
+	Arg:
+	Return:
 	"""
 	global q
 	#Recuperation du port decoute
@@ -364,6 +431,12 @@ def validation_lan():
 
 
 def supprimer(index):
+	"""
+	Vider les champs des treeviews au niveau de lihm
+	Arg:
+	index: int contenant le numero du champs don lutilisateur veut supprimer les infos
+	Return:
+	"""
 	if index == 1:
 		for record in treeGeoloc.get_children():
 			treeGeoloc.delete(record)
@@ -403,7 +476,6 @@ for i in range(4):
 	labelCam = tk.Label(label_simulation, text="Scenario {}".format(str(i+1)), bg='#09041A', fg='#F4F2F2') 
 	labelCam.grid(row=i, column=0, padx=10, pady=5)
 	#--------Creation des combobox des scenarios
-	#list_opt = ["Option 1", "Option 2", "Option 3", "Option 4"]
 	s_cbbx = ttk.Combobox(label_simulation, name='s{}_cbbx'.format(str(i+1)), values=scenarios, width=7)
 	s_cbbx.state(['!disabled', 'readonly'])
 	s_cbbx.bind("<<ComboboxSelected>>", lambda event, i=i:getOption(event, i))
@@ -420,22 +492,9 @@ for i in range(4):
 	label_boucle = tk.Label(label_simulation, text="Boucle", bg='#09041A', fg='#F4F2F2') 
 	label_boucle.grid(row=i, column=4, padx=0, pady=5)
 	#--------Creation du widget boucle
-	boucle = tk.Checkbutton(label_simulation,  name="boucle{}".format(str(i+1)), variable=list_cb[i], bg='#09041A', command=lambda i=i: boucler(i))
+	boucle = tk.Checkbutton(label_simulation,  name="boucle{}".format(str(i+1)), variable=list_cb[i], bg='#09041A')
 	boucle.grid(row=i, column=5, padx=10, pady=5)
-	"""
-	#--------Creation des labels declencheurs
-	label_declencheur = tk.Label(label_simulation, text="Declencheur", bg='#09041A', fg='#F4F2F2') 
-	label_declencheur.grid(row=i, column=6, padx=0, pady=5)
-	#--------Creation des combobox de declenchements
-	list_declencheur = ["FM", "FM+FP", "DG+FP"]
-	declencheur_cbbx = ttk.Combobox(label_simulation, name='declencheur{}_cbbx'.format(str(i+1)), values=list_declencheur, width=6)
-	declencheur_cbbx.state(['!disabled', 'readonly'])
-	declencheur_cbbx.bind("<<ComboboxSelected>>", lambda event, i=i:getDeclencheur(event, i))
-	declencheur_cbbx.grid(row=i, column=7, padx=10, pady=5, sticky='nw')
-	"""
-
-print(boucle.winfo_name())
-
+#print(boucle.winfo_name())
 #---------------------------------------------------Creation du label configuration
 label_config = tk.LabelFrame(root, text="Configuration", bg='#09041A', fg='#F4F2F2', width=175, height=150, borderwidth=1)
 label_config.grid_propagate(0)
@@ -444,27 +503,26 @@ label_config.place(x=440, y=5)
 labelPE = tk.Label(label_config, text="Port d'ecoute", bg='#09041A', fg='#F4F2F2') 
 labelPE.grid(row=0, column=0, padx=10, pady=5)
 #--------Creation de la zone de saisie du numero de port
-entryPE = tk.Entry(label_config, bg='#F4F2F2', fg='#09041A', width=6)#,command=getSaisie)#textvariable=saisie,
+entryPE = tk.Entry(label_config, bg='#F4F2F2', fg='#09041A', width=6)
 entryPE.grid(row=0, column=1, padx=0, pady=5)
 #--------Creation du label protocole UDP
 labelProtocole = tk.Label(label_config, text="Protocle UDP", bg='#09041A', fg='#F4F2F2') 
-labelProtocole.grid(row=1, column=0, padx=10, pady=5)#, sticky='nw')
+labelProtocole.grid(row=1, column=0, padx=10, pady=5)
 #--------Creation du boutton protocole UDP
 udp_value = tk.IntVar()
-boutton_UDP = tk.Checkbutton(label_config, variable=udp_value, bg='#09041A')#, command=surimpression)#, relief="solid")
+boutton_UDP = tk.Checkbutton(label_config, variable=udp_value, bg='#09041A')
 boutton_UDP.grid(row=1, column=1, padx=0, pady=5, sticky='w')
 #--------Creation du label protocole TCP
 labelProtocole = tk.Label(label_config, text="Protocle TCP", bg='#09041A', fg='#F4F2F2') 
-labelProtocole.grid(row=2, column=0, padx=10, pady=5)#, sticky='nw')
+labelProtocole.grid(row=2, column=0, padx=10, pady=5)
 #--------Creation du boutton protocole TCP
 tcp_value = tk.IntVar()
-boutton_TCP = tk.Checkbutton(label_config, variable=tcp_value, bg='#09041A', relief="flat")#, command=surimpression)#, relief="solid")
+boutton_TCP = tk.Checkbutton(label_config, variable=tcp_value, bg='#09041A', relief="flat")
 boutton_TCP.grid(row=2, column=1, padx=0, pady=5, sticky='w')
 #-------Creation du boutton valider pour la validation de la configuration reseau
 validation_button = tk.Button(label_config, text="Valider", command=validation_lan)
 validation_button['font'] = font.Font(size=5)
 validation_button.grid(row=3, column=0, padx=15, pady=5, sticky='w')
-
 #--------------------------------------------------Creation du label simulation declencheur
 label_declencheur = tk.LabelFrame(root, text="Simulation declencheurs", bg='#09041A', fg='#F4F2F2', width=295, height=150, borderwidth=1)
 label_declencheur.grid_propagate(0)
@@ -490,7 +548,6 @@ label_DGFP.grid(row=2, column=0, padx=5, pady=5, sticky='w')
 boutton_lancerDGFP = tk.Button(label_declencheur, text="LANCER", command=lancerDGFP)
 boutton_lancerDGFP['font'] = font.Font(size=5)
 boutton_lancerDGFP.grid(row=2, column=1, padx=10, pady=5, sticky='w')
-
 #-----------------------------------------------------Trame de geolocalisation
 #----------------Creation du titre trame de geolocalisation
 label_geoloc = tk.LabelFrame(root, text="Trame de Geolocalisation", labelanchor='n', bg='#09041A', fg='#F4F2F2', width=904, height=20, borderwidth=1)
@@ -599,7 +656,6 @@ treeFinM['show'] = 'headings'
 for key, value in finM_layout.items():
     treeFinM.heading(key, text = value[1], anchor=tk.W)
     treeFinM.column(key, width=value[0], minwidth=value[0], stretch=tk.YES)
-
 #-----------------------------------------------------Trame Etat IHM
 #--------------Creation du titre trame Etat IHM
 label_geoloc = tk.LabelFrame(root, text="Trame Etat IHM", labelanchor='n', bg='#09041A', fg='#F4F2F2', width=905, height=20, borderwidth=1)
@@ -634,7 +690,6 @@ treeIHM['show'] = 'headings'
 for key, value in IHM_layout.items():
     treeIHM.heading(key, text = value[1], anchor=tk.W)
     treeIHM.column(key, width=value[0], minwidth=value[0], stretch=tk.YES)
-
 #-----------------------------------------------------Trame Fermeture Porte
 #--------------Creation du titre trame Fin_Mission
 label_geoloc = tk.LabelFrame(root, text="Trame CFP", labelanchor='n', bg='#09041A', fg='#F4F2F2', width=905, height=20, borderwidth=1)

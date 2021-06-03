@@ -9,18 +9,7 @@ import queue
 import ctypes
 import sys
 
-"""
-def getScenario():
-	config = configparser.ConfigParser()
-	config.read('scenario.cfg')
 
-	dictionary = {}
-	for section in config.sections():
-		dictionary[section] = {}
-		for option in config.options(section):
-			dictionary[section][option] = config.get(section, option)
-	return dictionary
-"""
 #----------------------Recuperation des infos pour la config reseau
 list_lanData = []
 with open('lan_config.txt') as txtfile:
@@ -39,34 +28,33 @@ class Sendtram(threading.Thread):
 		self.sortie_normal = False
 		self.scenario = scenario
 		self.bouble = bouble
-		print("bouble", bouble)
 
 	def run(self):
 		"""
-		Excecution des scenarios
-		"""
-		"""
-		if self.bouble == 1:
-			while True:
-				self.sending()
-				if self.arret == True:
-					break
-		else:
-			self.sending()
+		Envoi de tram
+		Arg:
+		Return:
 		"""
 		self.sending()
 
-	
 	def stop(self):
 		"""
+		Arret de lenvoi de tram
+		Arg:
+		Return
 		"""
 		self.arret = True
-		print("arret arret:")
+		
 		
 	
 	
 
 	def sending(self):
+		"""
+		Fonction de constition et denvoi des trames suivant chaque scenario et declencheur
+		Arg:
+		Return:
+		"""
 		while self.sortie_normal == False:
 			"""
 			Creation des scenarios
@@ -89,14 +77,13 @@ class Sendtram(threading.Thread):
 				#Recuperation de la trame validation mission
 				dic_Val_Miss = dic_trameConfig.get("Val_Miss")
 				#Creation de la partie statique du message
-				#msg_static_valmission = dic_Val_Miss.get("debut de trame")+dic_Val_Miss.get("id source")+","+dic_Val_Miss.get("id destinataire")+","+dic_Val_Miss.get("type de trame")+","+dic_Val_Miss.get("code de trame")
 				#Calcul du chksum
 				chksum_valmission = '7F'
 				#Creation de la partie statique du message
 				msg_static_valmission = dic_Val_Miss.get("debut de trame")+dic_Val_Miss.get("id source")+","+dic_Val_Miss.get("id destinataire")+","+dic_Val_Miss.get("type de trame")+","+\
 				dic_Val_Miss.get("code de trame")+","+dic_Val_Miss.get("index du message")+","+dic_Val_Miss.get("repetition du message")+","+dic_Val_Miss.get("type de trame bis")+"*"+chksum_valmission
 				#Constitution du message de la tram
-				msg_valmission = msg_static_valmission #+","+str(index_ValM+1)+","+dic_Val_Miss.get("repetition du message")+"*"+chksum_valmission
+				msg_valmission = msg_static_valmission 
 				#Creation et envoi de la tram
 				packet_valmission = IP(dst=str(list_lanData[0]),src=str(list_lanData[1]))
 				packet_valmission /= UDP(sport=int(list_lanData[2]), dport=int(list_lanData[3]))
@@ -147,15 +134,13 @@ class Sendtram(threading.Thread):
 					break
 				#Recuperation de la trame fin mission
 				dic_Fin_Miss = dic_trameConfig.get("Fin_Miss")
-				#Creation de la partie statique du message
-				#msg_static_finmission = dic_Fin_Miss.get("debut de trame")+dic_Fin_Miss.get("id source")+","+dic_Fin_Miss.get("id destinataire")+","+dic_Fin_Miss.get("type de trame")+","+dic_Fin_Miss.get("code de trame")
 				#Calcul du chksum
 				chksum_finmission = '1A'
 				#Creation de la partie statique du message
 				msg_static_finmission = dic_Fin_Miss.get("debut de trame")+dic_Fin_Miss.get("id source")+","+dic_Fin_Miss.get("id destinataire")+","+dic_Fin_Miss.get("type de trame")+","+\
 				dic_Fin_Miss.get("code de trame")+","+dic_Fin_Miss.get("index du message")+","+dic_Fin_Miss.get("repetition du message")+","+dic_Fin_Miss.get("type de trame bis")+"*"+chksum_finmission
 				#Constitution du message de la tram
-				msg_finmission = msg_static_finmission #+","+str(index_FinM+1)+","+dic_Fin_Miss.get("repetition du message")+"*"+chksum_finmission
+				msg_finmission = msg_static_finmission
 				#Creation et envoi de la tram
 				packet_finmission = IP(dst=str(list_lanData[0]),src=str(list_lanData[1]))
 				packet_finmission /= UDP(sport=int(list_lanData[2]), dport=int(list_lanData[3]))
@@ -214,12 +199,8 @@ class Sendtram(threading.Thread):
 				#Creation de la partie statique du message
 				msg_static_finmission = dic_Fin_Miss.get("debut de trame")+dic_Fin_Miss.get("id source")+","+dic_Fin_Miss.get("id destinataire")+","+dic_Fin_Miss.get("type de trame")+","+\
 				dic_Fin_Miss.get("code de trame")+","+dic_Fin_Miss.get("index du message")+","+dic_Fin_Miss.get("repetition du message")+","+dic_Fin_Miss.get("type de trame bis")+"*"+chksum_finmission
-				#Creation de la partie statique du message
-				#msg_static_finmission = dic_Fin_Miss.get("debut de trame")+dic_Fin_Miss.get("id source")+","+dic_Fin_Miss.get("id destinataire")+","+dic_Fin_Miss.get("type de trame")+","+dic_Fin_Miss.get("code de trame")
-				#Calcul du chksum
-				#chksum_finmission = '1A'
 				#Constitution du message de la tram
-				msg_finmission = msg_static_finmission #+","+str(index_FinM+1)+","+dic_Fin_Miss.get("repetition du message")+"*"+chksum_finmission
+				msg_finmission = msg_static_finmission
 				#Creation et envoi de la tram
 				packet_finmission = IP(dst=str(list_lanData[0]),src=str(list_lanData[1]))
 				packet_finmission /= UDP(sport=int(list_lanData[2]), dport=int(list_lanData[3]))
@@ -275,23 +256,6 @@ class Sendtram(threading.Thread):
 				packet_CFP /= UDP(sport=int(list_lanData[2]), dport=int(list_lanData[3]))
 				packet_CFP /= Raw(load=msg_CFP)
 				packet_CFP = sr1(packet_CFP, timeout=1)
-				"""
-				qblt = "1"
-				zcofp = "1"
-				zop = "0"
-				msg_EIHM_B = msg_static_EIHM+","+str(index_EIHM+1)+","+dic_Etat_IHM.get("repetition du message")+","+dic_Etat_IHM.get("version")+","+dic_Etat_IHM.get("r")+","+\
-				dic_Etat_IHM.get("do1")+","+dic_Etat_IHM.get("do2")+","+dic_Etat_IHM.get("ga1")+","+dic_Etat_IHM.get("ga2")+","+dic_Etat_IHM.get("aiadc")+","+qblt+","+\
-				dic_Etat_IHM.get("qev")+","+dic_Etat_IHM.get("qum")+","+zcofp+","+zop+","+dic_Etat_IHM.get("zcvs")+","+dic_Etat_IHM.get("etat")+","+dic_Etat_IHM.get("i2c")+","+\
-				dic_Etat_IHM.get("gir")+","+dic_Etat_IHM.get("qbl")+","+dic_Etat_IHM.get("etat modem")+","+dic_Etat_IHM.get("rearmement")+","+dic_Etat_IHM.get("acquittement rearmement zb")+","+\
-				dic_Etat_IHM.get("acquittement rearmement zr")+"*"+chksum_EIHM
-				#-----------Creation et envoi de la tram 2 IHM
-				packet_EIHM_B = IP(dst=str(list_lanData[0]),src=str(list_lanData[1]))
-				packet_EIHM_B /= UDP(sport=int(list_lanData[2]), dport=int(list_lanData[3]))
-				packet_EIHM_B /= Raw(load=msg_EIHM_B)
-				answer_EIHM_B = sr1(packet_EIHM_B, timeout=1)
-				#Mise a jour de lindex
-				index_EIHM +=1
-				"""
 				#Gestion du temps de latence entre deux trames
 				time.sleep(int(retournement_delay[4]))
 				#------------Constitution du troisieme message de la tram IHM
@@ -345,7 +309,7 @@ class Sendtram(threading.Thread):
 				msg_static_valmission = dic_Val_Miss.get("debut de trame")+dic_Val_Miss.get("id source")+","+dic_Val_Miss.get("id destinataire")+","+dic_Val_Miss.get("type de trame")+","+\
 				dic_Val_Miss.get("code de trame")+","+dic_Val_Miss.get("index du message")+","+dic_Val_Miss.get("repetition du message")+","+dic_Val_Miss.get("type de trame bis")+"*"+chksum_valmission
 				#Constitution du message de la tram
-				msg_valmission = msg_static_valmission #+","+str(index_ValM+1)+","+dic_Val_Miss.get("repetition du message")+"*"+chksum_valmission
+				msg_valmission = msg_static_valmission
 				#Creation et envoi de la tram
 				packet_valmission = IP(dst=str(list_lanData[0]),src=str(list_lanData[1]))
 				packet_valmission /= UDP(sport=int(list_lanData[2]), dport=int(list_lanData[3]))
@@ -353,7 +317,6 @@ class Sendtram(threading.Thread):
 				answer_valM=sr1(packet_valmission, timeout=1)
 				#Mise a jour de lindex
 				index_ValM +=1
-				#time.sleep(5)
 			elif self.scenario == "fin_mission":
 				#-------------------------------Traitement de la trame fin mission
 				#Recuperation de la trame fin mission
@@ -363,10 +326,9 @@ class Sendtram(threading.Thread):
 				#Creation de la partie statique du message
 				msg_static_finmission = dic_Fin_Miss.get("debut de trame")+dic_Fin_Miss.get("id source")+","+dic_Fin_Miss.get("id destinataire")+","+dic_Fin_Miss.get("type de trame")+","+\
 				dic_Fin_Miss.get("code de trame")+","+dic_Fin_Miss.get("index du message")+","+dic_Fin_Miss.get("repetition du message")+","+dic_Fin_Miss.get("type de trame bis")+"*"+chksum_finmission
-				#msg_static_finmission = dic_Fin_Miss.get("debut de trame")+dic_Fin_Miss.get("id source")+","+dic_Fin_Miss.get("id destinataire")+","+dic_Fin_Miss.get("type de trame")+","+dic_Fin_Miss.get("code de trame")
 				
 				#Constitution du message de la tram
-				msg_finmission = msg_static_finmission #+","+str(index_FinM+1)+","+dic_Fin_Miss.get("repetition du message")+"*"+chksum_finmission
+				msg_finmission = msg_static_finmission 
 				#Creation et envoi de la tram
 				packet_finmission = IP(dst=str(list_lanData[0]),src=str(list_lanData[1]))
 				packet_finmission /= UDP(sport=int(list_lanData[2]), dport=int(list_lanData[3]))
@@ -377,21 +339,16 @@ class Sendtram(threading.Thread):
 				if self.arret == True:
 					break
 			elif self.scenario == "fm_fp":
-				#dic_delay = self.getDelay("trame_delay.txt")
-				#fm_fp_delay = dic_delay.get("fm_fp")
-				#print(fm_fp_delay)
 				#-------------------------------Traitement de la trame fin mission
 				#Recuperation de la trame fin mission
 				dic_Fin_Miss = dic_trameConfig.get("Fin_Miss")
-				#Creation de la partie statique du message
-				#msg_static_finmission = dic_Fin_Miss.get("debut de trame")+dic_Fin_Miss.get("id source")+","+dic_Fin_Miss.get("id destinataire")+","+dic_Fin_Miss.get("type de trame")+","+dic_Fin_Miss.get("code de trame")
 				#Calcul du chksum
 				chksum_finmission = '1A'
 				#Creation de la partie statique du message
 				msg_static_finmission = dic_Fin_Miss.get("debut de trame")+dic_Fin_Miss.get("id source")+","+dic_Fin_Miss.get("id destinataire")+","+dic_Fin_Miss.get("type de trame")+","+\
 				dic_Fin_Miss.get("code de trame")+","+dic_Fin_Miss.get("index du message")+","+dic_Fin_Miss.get("repetition du message")+","+dic_Fin_Miss.get("type de trame bis")+"*"+chksum_finmission
 				#Constitution du message de la tram
-				msg_finmission = msg_static_finmission #+","+str(index_FinM+1)+","+dic_Fin_Miss.get("repetition du message")+"*"+chksum_finmission
+				msg_finmission = msg_static_finmission 
 				#Creation et envoi de la tram
 				packet_finmission = IP(dst=str(list_lanData[0]),src=str(list_lanData[1]))
 				packet_finmission /= UDP(sport=int(list_lanData[2]), dport=int(list_lanData[3]))
@@ -402,8 +359,6 @@ class Sendtram(threading.Thread):
 				#Gestion du temps de pose entre trames
 				fm_fp_delay = dic_delay.get("fm_fp")
 				time.sleep(int(fm_fp_delay[0]))
-				#if self.arret == True:
-				#	break
 				#-------------------------------Traitement de la trame Ferture Porte
 				#Recuperation de la trame Etat IHM
 				dic_CFP = dic_trameConfig.get("Cfp")
@@ -419,31 +374,6 @@ class Sendtram(threading.Thread):
 				packet_CFP /= UDP(sport=int(list_lanData[2]), dport=int(list_lanData[3]))
 				packet_CFP /= Raw(load=msg_CFP)
 				packet_CFP = sr1(packet_CFP, timeout=1)
-				#-------------------------------Traitement de la trame etat IHM
-				"""
-				#Recuperation de la trame Etat IHM
-				dic_Etat_IHM = dic_trameConfig.get("Etat_IHM")
-				#Creation de la partie statique du message
-				msg_static_EIHM = dic_Etat_IHM.get("debut de trame")+dic_Etat_IHM.get("id source")+","+dic_Etat_IHM.get("id destinataire")+","+dic_Etat_IHM.get("type de trame")+","+dic_Etat_IHM.get("code de trame")
-				#Calcul du chksum
-				chksum_EIHM = '2B'
-				#-----------Constitution du second message de la tram IHM
-				qblt = "1"
-				zcofp = "1"
-				zop = "0"
-				msg_EIHM_B = msg_static_EIHM+","+str(index_EIHM+1)+","+dic_Etat_IHM.get("repetition du message")+","+dic_Etat_IHM.get("version")+","+dic_Etat_IHM.get("r")+","+\
-				dic_Etat_IHM.get("do1")+","+dic_Etat_IHM.get("do2")+","+dic_Etat_IHM.get("ga1")+","+dic_Etat_IHM.get("ga2")+","+dic_Etat_IHM.get("aiadc")+","+qblt+","+\
-				dic_Etat_IHM.get("qev")+","+dic_Etat_IHM.get("qum")+","+zcofp+","+zop+","+dic_Etat_IHM.get("zcvs")+","+dic_Etat_IHM.get("etat")+","+dic_Etat_IHM.get("i2c")+","+\
-				dic_Etat_IHM.get("gir")+","+dic_Etat_IHM.get("qbl")+","+dic_Etat_IHM.get("etat modem")+","+dic_Etat_IHM.get("rearmement")+","+dic_Etat_IHM.get("acquittement rearmement zb")+","+\
-				dic_Etat_IHM.get("acquittement rearmement zr")+"*"+chksum_EIHM
-				#-----------Creation et envoi de la tram 2 IHM
-				packet_EIHM_B = IP(dst=str(list_lanData[0]),src=str(list_lanData[1]))
-				packet_EIHM_B /= UDP(sport=int(list_lanData[2]), dport=int(list_lanData[3]))
-				packet_EIHM_B /= Raw(load=msg_EIHM_B)
-				answer_EIHM_B = sr1(packet_EIHM_B, timeout=1)
-				#Mise a jour de lindex
-				index_EIHM +=1
-				"""
 				if self.arret == True:
 					break
 			elif self.scenario == "dg_fp":
@@ -451,7 +381,6 @@ class Sendtram(threading.Thread):
 				#Recuperation de la latitude et de la longitude 
 				list_pos = self.getPos()
 				list_pos = list_pos[-1]#dernieres positions gps du trajet invalides-juvisy
-				print(list_pos)
 				#Recuperation de la configuration de la trame geoloc
 				dic_geoloc = dic_trameConfig.get("Geoloc")
 				#Creation de la partie statique du message
@@ -508,6 +437,9 @@ class Sendtram(threading.Thread):
 	def get_trameConfig(self):
 		"""
 		Recuperation des scenarios depuis le fichier cfg
+		Arg:
+		Return: 
+		dictionnary: dictionnaire contenant les infos trames
 		"""
 		config = configparser.ConfigParser()
 		config.read('trames.cfg')
@@ -522,10 +454,13 @@ class Sendtram(threading.Thread):
 	def getPos(self):
 		"""
 		Recuperation de la latitude et de la longitude
+		Arg:
+		Return: 
+		list_pos: list contenant les positions geographique
 		"""
 		list_pos = []
 		with open('route_points_wth_virg_as_sep.csv') as csvfile:
-			data_pos = csv.reader(csvfile)#, delimiter=',')#, quotechar='|')
+			data_pos = csv.reader(csvfile)
 			data_pos = list(data_pos)
 			for pos in data_pos:
 				list_pos.append(pos)
@@ -534,6 +469,10 @@ class Sendtram(threading.Thread):
 	def getTVS(self, numTram):
 		"""
 		Connaitre le TVS de la gare P, C, S en fonction de la position du train
+		Arg:
+		numTram: entier representant le numero de la tram courante
+		Return:
+		gare_name: list contenant les noms des gares P, C, S
 		"""
 		#------Recuperation des trigrammes des arrets
 		dic_TVS = {} 
@@ -565,6 +504,10 @@ class Sendtram(threading.Thread):
 	def getDelay(self, file):
 		"""
 		Recuperer le temps de latence entre chacune des trames de chacun des scenarios
+		Arg:
+		file: string contenant le nom fichier 
+		Return:
+		dic_d: dictionnaire contenant les temps de latence entre trames pour chaque scenario et declencheur
 		"""
 		dic_d = {}
 		with open(file) as txtfile:
@@ -575,10 +518,9 @@ class Sendtram(threading.Thread):
 				dic_d[temp[0]] = temp[1:]
 		return dic_d
 
-
 #----------------------Classe permettant de sniffer le reseau local
 class Sniffer(threading.Thread):
-	def  __init__(self, q, portE, udpF, tcpF, interface=str(list_lanData[4])):#, portE
+	def  __init__(self, q, portE, udpF, tcpF, interface=str(list_lanData[4])):
 		super().__init__()
 		self.q = q
 		self.portE = portE
@@ -587,6 +529,11 @@ class Sniffer(threading.Thread):
 		self.tcpF = tcpF
 
 	def run(self):
+		"""
+		Ecoute du reseau suivant un certain nombre de filtre
+		Arg:
+		Return:
+		"""
 		if self.udpF == 0 and self.tcpF == 0:
 			sniff(iface=self.interface, filter="port "+self.portE, prn=self.sniff_method) 
 		elif self.udpF == 1 and self.tcpF == 0:
@@ -599,12 +546,17 @@ class Sniffer(threading.Thread):
 
 
 	def sniff_method(self, pkt):
+		"""
+		Ecouter les trames qui passent sur le reseau et recuperer les informrations pertinantes
+		Arg:
+		pkt: packet de trame
+		Return:
+		"""
 		LANDatalake = {}
 		if not pkt.haslayer(Raw):
 			pass
 		####### Gets raw data from the packet
 		pkt_list = list(str(pkt[Raw].load))
-		#pkt_list = pkt[Raw].load
 		####### Get the index of the $ sign, and copy the datas after this sign.
 		dollar_index = list(pkt_list).index("$")
 		pkt_list = pkt_list[dollar_index:]
