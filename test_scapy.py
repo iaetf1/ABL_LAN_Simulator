@@ -541,7 +541,7 @@ class Sniffer(threading.Thread):
 		elif self.udpF == 0 and self.tcpF == 1:
 			sniff(iface=self.interface, filter="port "+self.portE+" and tcp", prn=self.sniff_method)
 		elif self.udpF == 1 and self.tcpF == 1:
-			sniff(iface=self.interface, filter="port "+self.portE+" and udp and tcp", prn=self.sniff_method)
+			sniff(iface=self.interface, filter="port "+self.portE+" and (udp or tcp)", prn=self.sniff_method)
 
 
 
